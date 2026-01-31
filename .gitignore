@@ -1,0 +1,19 @@
+# Files
+.env
+*.log
+.Zone.Identifier
+.DS_Store
+auth.json
+
+# Folders
+vendor/
+dist/
+node_modules/
+
+docker/web/**/cache/*
+docker/web/**/logs/*
+docker/web/**/public/*
+
+# Exceptions
+!docker/web/**/public/.gitkeep
+!docker/web/**/*.log

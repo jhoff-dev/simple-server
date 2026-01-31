@@ -1,0 +1,59 @@
+x-cloudflared-settings:
+    &cloudflared-settings
+      image: cloudflare/cloudflared:latest
+      restart: unless-stopped
+      networks:
+        - main_proxy
+      deploy:
+        resources:
+          limits:
+            cpus: 0.5
+            memory: 100M
+services:
+  cloudflared-http:
+    <<: *cloudflared-settings
+    container_name: cloudflared-http
+    command: tunnel --no-autoupdate run --token ${CL_HTTP_TOKEN}
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ${PROJECT_ROOT}/docker/nginx/files/:/etc/nginx/
+      - ${PROJECT_ROOT}/docker/web/:/web/
+    networks:
+      - main_proxy
+      - public_proxy
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 150M
+        reservations:
+          cpus: 0.1
+          memory: 50M
+
+  site:
+    image: php:8.4.17-fpm-alpine
+    container_name: site
+    restart: unless-stopped
+    volumes:
+      - ${PROJECT_ROOT}/docker/web/localhost/public:/var/www/html
+    networks:
+      - main_proxy
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 512M
+
+networks:
+  main_proxy:
+    name: main_proxy
+    external: true
+  public_proxy:
+    name: public_proxy
+    external: true
